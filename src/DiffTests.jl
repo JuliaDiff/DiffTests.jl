@@ -104,7 +104,7 @@ function ackley(x)
         sum_sqrs += i^2
     end
     return (-a * exp(b * sqrt(len_recip*sum_sqrs)) -
-            exp(len_recip*sum_cos) + a + e)
+            exp(len_recip*sum_cos) + a + exp(1))
 end
 
 self_weighted_logit(x) = inv(1.0 + exp(-dot(x, x)))

@@ -252,17 +252,17 @@ const INPLACE_ARRAY_TO_ARRAY_FUNCS = (chebyquad!, brown_almost_linear!, trigonom
 # f(x::Array)::Array #
 ######################
 
-chebyquad(x) = (y = zeros(x); chebyquad!(y, x); return y)
+chebyquad(x) = (y = fill(zero(eltype(x)), size(x)); chebyquad!(y, x); return y)
 
-brown_almost_linear(x) = (y = zeros(x); brown_almost_linear!(y, x); return y)
+brown_almost_linear(x) = (y = fill(zero(eltype(x)), size(x)); brown_almost_linear!(y, x); return y)
 
-trigonometric(x) = (y = ones(x); trigonometric!(y, x); return y)
+trigonometric(x) = (y = fill(one(eltype(x)), size(x)); trigonometric!(y, x); return y)
 
-mutation_test_1(x) = (y = zeros(x); mutation_test_1!(y, x); return y)
+mutation_test_1(x) = (y = fill(zero(eltype(x)), size(x)); mutation_test_1!(y, x); return y)
 
-mutation_test_2(x) = (y = ones(x); mutation_test_2!(y, x); return y)
+mutation_test_2(x) = (y = fill(one(eltype(x)), size(x)); mutation_test_2!(y, x); return y)
 
-arr2arr_1(x) = (sum(x .* x); zeros(x))
+arr2arr_1(x) = (sum(x .* x); fill(zero(eltype(x)), size(x)))
 
 arr2arr_2(x) = x[1, :] .+ x[1, :] .+ first(x)
 

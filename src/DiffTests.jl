@@ -144,16 +144,12 @@ const MATRIX_TO_NUMBER_FUNCS = (det, mat2num_1, mat2num_2, mat2num_3, mat2num_4,
 # binary broadcast #
 ####################
 
-if VERSION >= v"0.6.0-dev.1614"
-    const BINARY_BROADCAST_OPS = ((a, b) -> broadcast(+, a, b),
-                                  (a, b) -> broadcast(-, a, b),
-                                  (a, b) -> broadcast(*, a, b),
-                                  (a, b) -> broadcast(/, a, b),
-                                  (a, b) -> broadcast(\, a, b),
-                                  (a, b) -> broadcast(^, a, b))
-else
-    const BINARY_BROADCAST_OPS = (.+, .-, .*, ./, .\, .^)
-end
+const BINARY_BROADCAST_OPS = ((a, b) -> broadcast(+, a, b),
+                              (a, b) -> broadcast(-, a, b),
+                              (a, b) -> broadcast(*, a, b),
+                              (a, b) -> broadcast(/, a, b),
+                              (a, b) -> broadcast(\, a, b),
+                              (a, b) -> broadcast(^, a, b))
 
 #################################
 # f(::Matrix, ::Matrix)::Number #

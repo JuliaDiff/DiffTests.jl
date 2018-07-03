@@ -1,5 +1,8 @@
 module DiffTests
 
+using LinearAlgebra: det, norm, dot, tr
+using Statistics: mean
+
 #=
 These functions are organized in sets based on input/output type. They are unary and not
 in-place unless otherwised specified. These functions have been written with the following
@@ -44,9 +47,9 @@ end
 
 const NUMBER_TO_ARRAY_FUNCS = (num2arr_1,)
 
-#################################
-# f!(y::Array, x::Number)::Void #
-#################################
+####################################
+# f!(y::Array, x::Number)::Nothing #
+####################################
 
 function num2arr_1!(y, x)
     fill!(y, zero(x))
@@ -64,7 +67,7 @@ const INPLACE_NUMBER_TO_ARRAY_FUNCS = (num2arr_1!,)
 
 vec2num_1(x) = (exp(x[1]) + log(x[3]) * x[4]) / x[5]
 vec2num_2(x) = x[1]*x[2] + sin(x[1])
-vec2num_3(x) = vecnorm(x' .* x)
+vec2num_3(x) = norm(x' .* x)
 vec2num_4(x) = ((sum(x) + prod(x)); 1)
 vec2num_5(x) = sum((-x).^3)
 vec2num_6(x) = sum([ifelse(i > 0, i, 0) for i in x])
@@ -124,7 +127,7 @@ mat2num_1(x) = det(first(x) * inv(x * x) + x)
 function mat2num_2(x)
     a = reshape(x, length(x), 1)
     b = reshape(copy(x), 1, length(x))
-    return trace(log.((1 .+ (a * b)) .+ a .- b))
+    return tr(log.((1 .+ (a * b)) .+ a .- b))
 end
 
 function mat2num_3(x)
@@ -134,9 +137,9 @@ function mat2num_3(x)
     return sum(map(n -> sqrt(abs(n) + n^2) * 0.5, A))
 end
 
-mat2num_4(x) = mean(sum(sin.(x) * x, 2))
+mat2num_4(x) = mean(sum(sin.(x) * x, dims=2))
 
-softmax(x) = sum(exp.(x) ./ sum(exp.(x), 2))
+softmax(x) = sum(exp.(x) ./ sum(exp.(x), dims=2))
 
 const MATRIX_TO_NUMBER_FUNCS = (det, mat2num_1, mat2num_2, mat2num_3, mat2num_4, softmax)
 
@@ -157,8 +160,8 @@ const BINARY_BROADCAST_OPS = ((a, b) -> broadcast(+, a, b),
 
 const BINARY_MATRIX_TO_MATRIX_FUNCS = (+, -, *, /, \,
                                        BINARY_BROADCAST_OPS...,
-                                       A_mul_Bt, At_mul_B, At_mul_Bt,
-                                       A_mul_Bc, Ac_mul_B, Ac_mul_Bc)
+                                       (a, b) -> a * transpose(b), (a, b) -> transpose(a) * b, (a, b) -> transpose(a) * transpose(b),
+                                       (a, b) -> a * adjoint(b), (a, b) -> adjoint(a) * b, (a, b) -> adjoint(a) * adjoint(b))
 
 ###########################################
 # f(::Matrix, ::Matrix, ::Matrix)::Number #
@@ -170,9 +173,9 @@ neural_step(x1, w1, w2) = sigmoid(dot(w2[1:size(w1, 2)], relu(w1 * x1[1:size(w1,
 
 const TERNARY_MATRIX_TO_NUMBER_FUNCS = (neural_step,)
 
-################################
-# f!(y::Array, x::Array)::Void #
-################################
+###################################
+# f!(y::Array, x::Array)::Nothing #
+###################################
 # Credit for `chebyquad!`, `brown_almost_linear!`, and `trigonometric!` goes to
 # Kristoffer Carlsson (@KristofferC).
 

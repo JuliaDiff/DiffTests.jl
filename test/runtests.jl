@@ -1,5 +1,5 @@
 using DiffTests
-using Base.Test
+using Test
 
 n = rand()
 x, y = rand(5, 5), rand(26)
@@ -42,12 +42,12 @@ for f in DiffTests.BINARY_MATRIX_TO_MATRIX_FUNCS
     @test isa(f(A, B), Array)
 end
 
-# f! returns Void
+# f! returns Nothing
 
 for f! in DiffTests.INPLACE_ARRAY_TO_ARRAY_FUNCS
-    @test isa(f!(y, x), Void)
+    @test isa(f!(y, x), Nothing)
 end
 
 for f! in DiffTests.INPLACE_NUMBER_TO_ARRAY_FUNCS
-    @test isa(f!(y, n), Void)
+    @test isa(f!(y, n), Nothing)
 end

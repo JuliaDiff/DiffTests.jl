@@ -307,6 +307,8 @@ const ARRAY_TO_ARRAY_FUNCS = (-, chebyquad, brown_almost_linear, trigonometric, 
 # f(::Matrix)::Matrix #
 #######################
 
-const MATRIX_TO_MATRIX_FUNCS = (inv,)
+const MATRIX_TO_MATRIX_FUNCS = (inv,
+                                diag_lmul, dense_lmul, utriag_lmul, ltriag_lmul,
+                                diag_ldiv, utriag_ldiv, ltriag_ldiv)
 
 end # module

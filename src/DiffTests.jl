@@ -1,6 +1,6 @@
 module DiffTests
 
-using LinearAlgebra: det, norm, dot, tr
+using LinearAlgebra: det, norm, dot, tr, Diagonal, LowerTriangular, UpperTriangular
 using Statistics: mean
 
 #=
@@ -246,8 +246,41 @@ function mutation_test_2!(y, x)
     return nothing
 end
 
+############################
+# f(x::VecOrMat)::VecOrMat #
+############################
+
 const INPLACE_ARRAY_TO_ARRAY_FUNCS = (chebyquad!, brown_almost_linear!, trigonometric!,
                                       mutation_test_1!, mutation_test_2!)
+
+diag_matrix(::Type{T}, n::Integer) where T<:Real =
+    Diagonal(LinRange(convert(T, 0.01), convert(T, 100.0), n))
+diag_matrix(x::VecOrMat) = diag_matrix(Float64, size(x, 1))
+
+hilbert_matrix(::Type{T}, n::Integer) where T<:Real =
+    [convert(T, inv(i + j - 1)) for i in 1:n, j in 1:n]
+hilbert_matrix(x::VecOrMat) = hilbert_matrix(Float64, size(x, 1))
+
+lehmer_matrix(::Type{T}, n::Integer) where T<:Real =
+    [convert(T, min(i, j)/max(i, j)) for i in 1:n, j in 1:n]
+lehmer_matrix(x::VecOrMat) = lehmer_matrix(Float64, size(x, 1))
+
+test_matrix = lehmer_matrix
+
+# left multiplication by a constant matrix
+diag_lmul(x::VecOrMat) = diag_matrix(x) * x
+dense_lmul(x::VecOrMat) = test_matrix(x) * x
+utriag_lmul(x::VecOrMat) =  UpperTriangular(test_matrix(x)) * x
+ltriag_lmul(x::VecOrMat) =  LowerTriangular(test_matrix(x)) * x
+
+# left division by a constant matrix
+diag_ldiv(x::VecOrMat) = diag_matrix(x) \ x
+dense_ldiv(x::VecOrMat) = test_matrix(x) \ x
+utriag_ldiv(x::VecOrMat) =  UpperTriangular(test_matrix(x)) \ x
+ltriag_ldiv(x::VecOrMat) =  LowerTriangular(test_matrix(x)) \ x
+
+const VECTOR_TO_VECTOR_FUNCS = (diag_lmul, dense_lmul, utriag_lmul, ltriag_lmul,
+                                diag_ldiv, utriag_ldiv, ltriag_ldiv)
 
 ######################
 # f(x::Array)::Array #

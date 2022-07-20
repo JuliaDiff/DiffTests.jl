@@ -34,6 +34,10 @@ for f in DiffTests.ARRAY_TO_ARRAY_FUNCS
     @test isa(f(y), Array)
 end
 
+for f in DiffTests.VECTOR_TO_VECTOR_FUNCS
+    @test isa(f(y), Vector)
+end
+
 for f in DiffTests.MATRIX_TO_MATRIX_FUNCS
     @test isa(f(A), Matrix)
 end

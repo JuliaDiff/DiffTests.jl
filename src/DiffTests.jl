@@ -246,12 +246,12 @@ function mutation_test_2!(y, x)
     return nothing
 end
 
+const INPLACE_ARRAY_TO_ARRAY_FUNCS = (chebyquad!, brown_almost_linear!, trigonometric!,
+                                      mutation_test_1!, mutation_test_2!)
+
 ############################
 # f(x::VecOrMat)::VecOrMat #
 ############################
-
-const INPLACE_ARRAY_TO_ARRAY_FUNCS = (chebyquad!, brown_almost_linear!, trigonometric!,
-                                      mutation_test_1!, mutation_test_2!)
 
 diag_matrix(::Type{T}, n::Integer) where T<:Real =
     Diagonal(LinRange(convert(T, 0.01), convert(T, 100.0), n))

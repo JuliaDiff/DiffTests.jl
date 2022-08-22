@@ -1,6 +1,7 @@
 module DiffTests
 
 using LinearAlgebra: det, norm, dot, tr, Diagonal, LowerTriangular, UpperTriangular
+using SparseArrays: sparse
 using Statistics: mean
 
 #=
@@ -272,15 +273,23 @@ diag_lmul(x::VecOrMat) = diag_matrix(x) * x
 dense_lmul(x::VecOrMat) = test_matrix(x) * x
 utriag_lmul(x::VecOrMat) =  UpperTriangular(test_matrix(x)) * x
 ltriag_lmul(x::VecOrMat) =  LowerTriangular(test_matrix(x)) * x
+sparse_lmul(x::VecOrMat) = sparse(test_matrix(x)) * x
+sp_utriag_lmul(x::VecOrMat) = UpperTriangular(sparse(test_matrix(x))) * x
+sp_ltriag_lmul(x::VecOrMat) = LowerTriangular(sparse(test_matrix(x))) * x
 
 # left division by a constant matrix
 diag_ldiv(x::VecOrMat) = diag_matrix(x) \ x
 dense_ldiv(x::VecOrMat) = test_matrix(x) \ x
 utriag_ldiv(x::VecOrMat) =  UpperTriangular(test_matrix(x)) \ x
 ltriag_ldiv(x::VecOrMat) =  LowerTriangular(test_matrix(x)) \ x
+sparse_ldiv(x::VecOrMat) = sparse(test_matrix(x)) \ x
+sp_utriag_ldiv(x::VecOrMat) = UpperTriangular(sparse(test_matrix(x))) \ x
+sp_ltriag_ldiv(x::VecOrMat) = LowerTriangular(sparse(test_matrix(x))) \ x
 
 const VECTOR_TO_VECTOR_FUNCS = (diag_lmul, dense_lmul, utriag_lmul, ltriag_lmul,
-                                diag_ldiv, utriag_ldiv, ltriag_ldiv)
+                                sparse_lmul, sp_utriag_lmul, sp_ltriag_lmul,
+                                diag_ldiv, utriag_ldiv, ltriag_ldiv,
+                                sparse_ldiv, sp_utriag_ldiv, sp_ltriag_ldiv,)
 
 ######################
 # f(x::Array)::Array #
@@ -309,6 +318,8 @@ const ARRAY_TO_ARRAY_FUNCS = (-, chebyquad, brown_almost_linear, trigonometric, 
 
 const MATRIX_TO_MATRIX_FUNCS = (inv,
                                 diag_lmul, dense_lmul, utriag_lmul, ltriag_lmul,
-                                diag_ldiv, utriag_ldiv, ltriag_ldiv)
+                                sparse_lmul, sp_utriag_lmul, sp_ltriag_lmul,
+                                diag_ldiv, utriag_ldiv, ltriag_ldiv,
+                                sparse_ldiv, sp_utriag_ldiv, sp_ltriag_ldiv,)
 
 end # module

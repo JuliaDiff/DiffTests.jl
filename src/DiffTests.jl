@@ -258,10 +258,6 @@ diag_matrix(::Type{T}, n::Integer) where T<:Real =
     Diagonal(LinRange(convert(T, 0.01), convert(T, 100.0), n))
 diag_matrix(x::VecOrMat) = diag_matrix(Float64, size(x, 1))
 
-hilbert_matrix(::Type{T}, n::Integer) where T<:Real =
-    [convert(T, inv(i + j - 1)) for i in 1:n, j in 1:n]
-hilbert_matrix(x::VecOrMat) = hilbert_matrix(Float64, size(x, 1))
-
 lehmer_matrix(::Type{T}, n::Integer) where T<:Real =
     [convert(T, min(i, j)/max(i, j)) for i in 1:n, j in 1:n]
 lehmer_matrix(x::VecOrMat) = lehmer_matrix(Float64, size(x, 1))

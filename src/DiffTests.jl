@@ -251,36 +251,38 @@ const INPLACE_ARRAY_TO_ARRAY_FUNCS = (chebyquad!, brown_almost_linear!, trigonom
                                       mutation_test_1!, mutation_test_2!)
 
 ############################
-# f(x::VecOrMat)::VecOrMat #
+# f(x::AbstractVecOrMat)::AbstractVecOrMat #
 ############################
 
-diag_matrix(::Type{T}, n::Integer) where T<:Real =
-    Diagonal(LinRange(convert(T, 0.01), convert(T, 100.0), n))
-diag_matrix(x::VecOrMat) = diag_matrix(Float64, size(x, 1))
+diag_matrix(x::AbstractVecOrMat) = diag_matrix(eltype(x), size(x, 1))
+function diag_matrix(::Type{T}, n::Integer) where T<:Real
+    Diagonal(collect(range(convert(T, 1//10); stop=convert(T, 100), length=n)))
+end
 
-lehmer_matrix(::Type{T}, n::Integer) where T<:Real =
-    [convert(T, min(i, j)/max(i, j)) for i in 1:n, j in 1:n]
-lehmer_matrix(x::VecOrMat) = lehmer_matrix(Float64, size(x, 1))
+lehmer_matrix(x::AbstractVecOrMat) = lehmer_matrix(eltype(x), size(x, 1))
+function lehmer_matrix(::Type{T}, n::Integer) where T<:Real
+    [convert(T, //(minmax(i, j)...)) for i in 1:n, j in 1:n]
+end
 
 test_matrix = lehmer_matrix
 
 # left multiplication by a constant matrix
-diag_lmul(x::VecOrMat) = diag_matrix(x) * x
-dense_lmul(x::VecOrMat) = test_matrix(x) * x
-utriag_lmul(x::VecOrMat) =  UpperTriangular(test_matrix(x)) * x
-ltriag_lmul(x::VecOrMat) =  LowerTriangular(test_matrix(x)) * x
-sparse_lmul(x::VecOrMat) = sparse(test_matrix(x)) * x
-sp_utriag_lmul(x::VecOrMat) = UpperTriangular(sparse(test_matrix(x))) * x
-sp_ltriag_lmul(x::VecOrMat) = LowerTriangular(sparse(test_matrix(x))) * x
+diag_lmul(x::AbstractVecOrMat) = diag_matrix(x) * x
+dense_lmul(x::AbstractVecOrMat) = test_matrix(x) * x
+utriag_lmul(x::AbstractVecOrMat) =  UpperTriangular(test_matrix(x)) * x
+ltriag_lmul(x::AbstractVecOrMat) =  LowerTriangular(test_matrix(x)) * x
+sparse_lmul(x::AbstractVecOrMat) = sparse(test_matrix(x)) * x
+sp_utriag_lmul(x::AbstractVecOrMat) = UpperTriangular(sparse(test_matrix(x))) * x
+sp_ltriag_lmul(x::AbstractVecOrMat) = LowerTriangular(sparse(test_matrix(x))) * x
 
 # left division by a constant matrix
-diag_ldiv(x::VecOrMat) = diag_matrix(x) \ x
-dense_ldiv(x::VecOrMat) = test_matrix(x) \ x
-utriag_ldiv(x::VecOrMat) =  UpperTriangular(test_matrix(x)) \ x
-ltriag_ldiv(x::VecOrMat) =  LowerTriangular(test_matrix(x)) \ x
-sparse_ldiv(x::VecOrMat) = sparse(test_matrix(x)) \ x
-sp_utriag_ldiv(x::VecOrMat) = UpperTriangular(sparse(test_matrix(x))) \ x
-sp_ltriag_ldiv(x::VecOrMat) = LowerTriangular(sparse(test_matrix(x))) \ x
+diag_ldiv(x::AbstractVecOrMat) = diag_matrix(x) \ x
+dense_ldiv(x::AbstractVecOrMat) = test_matrix(x) \ x
+utriag_ldiv(x::AbstractVecOrMat) =  UpperTriangular(test_matrix(x)) \ x
+ltriag_ldiv(x::AbstractVecOrMat) =  LowerTriangular(test_matrix(x)) \ x
+sparse_ldiv(x::AbstractVecOrMat) = sparse(test_matrix(x)) \ x
+sp_utriag_ldiv(x::AbstractVecOrMat) = UpperTriangular(sparse(test_matrix(x))) \ x
+sp_ltriag_ldiv(x::AbstractVecOrMat) = LowerTriangular(sparse(test_matrix(x))) \ x
 
 const VECTOR_TO_VECTOR_FUNCS = (diag_lmul, dense_lmul, utriag_lmul, ltriag_lmul,
                                 sparse_lmul, sp_utriag_lmul, sp_ltriag_lmul,

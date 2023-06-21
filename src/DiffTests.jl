@@ -282,7 +282,7 @@ ltriag_ldiv(x::AbstractVecOrMat) =  LowerTriangular(test_matrix(x)) \ x
 
 const VECTOR_TO_VECTOR_FUNCS = [diag_lmul, dense_lmul, utriag_lmul, ltriag_lmul,
                                 sparse_lmul, sp_utriag_lmul, sp_ltriag_lmul,
-                                diag_ldiv, utriag_ldiv, ltriag_ldiv,]
+                                diag_ldiv,]
 
 ######################################
 # f(x::AbstractArray)::AbstractArray #
@@ -312,6 +312,12 @@ const ARRAY_TO_ARRAY_FUNCS = [-, chebyquad, brown_almost_linear, trigonometric, 
 const MATRIX_TO_MATRIX_FUNCS = [inv,
                                 diag_lmul, dense_lmul, utriag_lmul, ltriag_lmul,
                                 sparse_lmul, sp_utriag_lmul, sp_ltriag_lmul,
-                                diag_ldiv, utriag_ldiv, ltriag_ldiv,]
+                                diag_ldiv,]
+
+if VERSION >= v"1.1"
+    # required ldiv!(triag, adjoint) that is not implemented in 1.0
+    append!(VECTOR_TO_VECTOR_FUNCS, [utriag_ldiv, ltriag_ldiv])
+    append!(MATRIX_TO_MATRIX_FUNCS, [utriag_ldiv, ltriag_ldiv])
+end
 
 end # module

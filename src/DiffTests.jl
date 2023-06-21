@@ -31,9 +31,9 @@ num2num_5(x) = 1. / (1. + exp(-x))
 const NUMBER_TO_NUMBER_FUNCS = [num2num_1, num2num_2, num2num_3,
                                 num2num_4, num2num_5, identity]
 
-#######################
-# f(x::Number)::Array #
-#######################
+###############################
+# f(x::Number)::AbstractArray #
+###############################
 
 function num2arr_1(x)
     return reshape([num2num_1(x),
@@ -48,9 +48,9 @@ end
 
 const NUMBER_TO_ARRAY_FUNCS = [num2arr_1,]
 
-####################################
-# f!(y::Array, x::Number)::Nothing #
-####################################
+############################################
+# f!(y::AbstractArray, x::Number)::Nothing #
+############################################
 
 function num2arr_1!(y, x)
     fill!(y, zero(x))
@@ -62,9 +62,9 @@ end
 
 const INPLACE_NUMBER_TO_ARRAY_FUNCS = [num2arr_1!,]
 
-########################
-# f(x::Vector)::Number #
-########################
+################################
+# f(x::AbstractVector)::Number #
+################################
 
 vec2num_1(x) = (exp(x[1]) + log(x[3]) * x[4]) / x[5]
 vec2num_2(x) = x[1]*x[2] + sin(x[1])
@@ -121,9 +121,9 @@ const VECTOR_TO_NUMBER_FUNCS = [vec2num_1, vec2num_2,  vec2num_3, vec2num_4, vec
                                 rosenbrock_3, rosenbrock_4, ackley, self_weighted_logit,
                                 nested_array_mul, first]
 
-########################
-# f(x::Matrix)::Number #
-########################
+################################
+# f(x::AbstractMatrix)::Number #
+################################
 
 mat2num_1(x) = det(first(x) * inv(x * x) + x)
 
@@ -157,18 +157,18 @@ const BINARY_BROADCAST_OPS = ((a, b) -> broadcast(+, a, b),
                               (a, b) -> broadcast(\, a, b),
                               (a, b) -> broadcast(^, a, b))
 
-#################################
-# f(::Matrix, ::Matrix)::Number #
-#################################
+#########################################################
+# f(::AbstractMatrix, ::AbstractMatrix)::AbstractMatrix #
+#########################################################
 
 const BINARY_MATRIX_TO_MATRIX_FUNCS = [+, -, *, /, \,
                                        BINARY_BROADCAST_OPS...,
                                        (a, b) -> a * transpose(b), (a, b) -> transpose(a) * b, (a, b) -> transpose(a) * transpose(b),
                                        (a, b) -> a * adjoint(b), (a, b) -> adjoint(a) * b, (a, b) -> adjoint(a) * adjoint(b)]
 
-###########################################
-# f(::Matrix, ::Matrix, ::Matrix)::Number #
-###########################################
+###################################################################
+# f(::AbstractMatrix, ::AbstractMatrix, ::AbstractMatrix)::Number #
+###################################################################
 
 relu(x) = log.(1.0 .+ exp.(x))
 sigmoid(n) = 1. / (1. + exp.(-n))
@@ -176,9 +176,9 @@ neural_step(x1, w1, w2) = sigmoid(dot(w2[1:size(w1, 2)], relu(w1 * x1[1:size(w1,
 
 const TERNARY_MATRIX_TO_NUMBER_FUNCS = [neural_step,]
 
-###################################
-# f!(y::Array, x::Array)::Nothing #
-###################################
+###################################################
+# f!(y::AbstractArray, x::AbstractArray)::Nothing #
+###################################################
 # Credit for `chebyquad!`, `brown_almost_linear!`, and `trigonometric!` goes to
 # Kristoffer Carlsson (@KristofferC).
 
@@ -250,46 +250,47 @@ end
 const INPLACE_ARRAY_TO_ARRAY_FUNCS = [chebyquad!, brown_almost_linear!, trigonometric!,
                                       mutation_test_1!, mutation_test_2!]
 
-############################
-# f(x::VecOrMat)::VecOrMat #
-############################
+############################################
+# f(x::AbstractVecOrMat)::AbstractVecOrMat #
+############################################
 
 diag_matrix(::Type{T}, n::Integer) where T<:Real =
     Diagonal(LinRange(convert(T, 0.01), convert(T, 100.0), n))
-diag_matrix(x::VecOrMat) = diag_matrix(Float64, size(x, 1))
+diag_matrix(x::AbstractVecOrMat) = diag_matrix(Float64, size(x, 1))
 
 lehmer_matrix(::Type{T}, n::Integer) where T<:Real =
     [convert(T, min(i, j)/max(i, j)) for i in 1:n, j in 1:n]
-lehmer_matrix(x::VecOrMat) = lehmer_matrix(Float64, size(x, 1))
+lehmer_matrix(x::AbstractVecOrMat) = lehmer_matrix(Float64, size(x, 1))
 
 test_matrix = lehmer_matrix
 
 # left multiplication by a constant matrix
-diag_lmul(x::VecOrMat) = diag_matrix(x) * x
-dense_lmul(x::VecOrMat) = test_matrix(x) * x
-utriag_lmul(x::VecOrMat) =  UpperTriangular(test_matrix(x)) * x
-ltriag_lmul(x::VecOrMat) =  LowerTriangular(test_matrix(x)) * x
-sparse_lmul(x::VecOrMat) = sparse(test_matrix(x)) * x
-sp_utriag_lmul(x::VecOrMat) = UpperTriangular(sparse(test_matrix(x))) * x
-sp_ltriag_lmul(x::VecOrMat) = LowerTriangular(sparse(test_matrix(x))) * x
+diag_lmul(x::AbstractVecOrMat) = diag_matrix(x) * x
+dense_lmul(x::AbstractVecOrMat) = test_matrix(x) * x
+utriag_lmul(x::AbstractVecOrMat) =  UpperTriangular(test_matrix(x)) * x
+ltriag_lmul(x::AbstractVecOrMat) =  LowerTriangular(test_matrix(x)) * x
+
+sparse_lmul(x::AbstractVecOrMat) = sparse(test_matrix(x)) * x
+sp_utriag_lmul(x::AbstractVecOrMat) = UpperTriangular(sparse(test_matrix(x))) * x
+sp_ltriag_lmul(x::AbstractVecOrMat) = LowerTriangular(sparse(test_matrix(x))) * x
 
 # left division by a constant matrix
-diag_ldiv(x::VecOrMat) = diag_matrix(x) \ x
-dense_ldiv(x::VecOrMat) = test_matrix(x) \ x
-utriag_ldiv(x::VecOrMat) =  UpperTriangular(test_matrix(x)) \ x
-ltriag_ldiv(x::VecOrMat) =  LowerTriangular(test_matrix(x)) \ x
-sparse_ldiv(x::VecOrMat) = sparse(test_matrix(x)) \ x
-sp_utriag_ldiv(x::VecOrMat) = UpperTriangular(sparse(test_matrix(x))) \ x
-sp_ltriag_ldiv(x::VecOrMat) = LowerTriangular(sparse(test_matrix(x))) \ x
+diag_ldiv(x::AbstractVecOrMat) = diag_matrix(x) \ x
+dense_ldiv(x::AbstractVecOrMat) = test_matrix(x) \ x
+utriag_ldiv(x::AbstractVecOrMat) =  UpperTriangular(test_matrix(x)) \ x
+ltriag_ldiv(x::AbstractVecOrMat) =  LowerTriangular(test_matrix(x)) \ x
+sparse_ldiv(x::AbstractVecOrMat) = sparse(test_matrix(x)) \ x
+sp_utriag_ldiv(x::AbstractVecOrMat) = UpperTriangular(sparse(test_matrix(x))) \ x
+sp_ltriag_ldiv(x::AbstractVecOrMat) = LowerTriangular(sparse(test_matrix(x))) \ x
 
 const VECTOR_TO_VECTOR_FUNCS = [diag_lmul, dense_lmul, utriag_lmul, ltriag_lmul,
                                 sparse_lmul, sp_utriag_lmul, sp_ltriag_lmul,
                                 diag_ldiv, utriag_ldiv, ltriag_ldiv,
                                 sparse_ldiv, sp_utriag_ldiv, sp_ltriag_ldiv,]
 
-######################
-# f(x::Array)::Array #
-######################
+######################################
+# f(x::AbstractArray)::AbstractArray #
+######################################
 
 chebyquad(x) = (y = fill(zero(eltype(x)), size(x)); chebyquad!(y, x); return y)
 
@@ -308,9 +309,9 @@ arr2arr_2(x) = x[1, :] .+ x[1, :] .+ first(x)
 const ARRAY_TO_ARRAY_FUNCS = [-, chebyquad, brown_almost_linear, trigonometric, arr2arr_1,
                               arr2arr_2, mutation_test_1, mutation_test_2, identity]
 
-#######################
-# f(::Matrix)::Matrix #
-#######################
+#######################################
+# f(::AbstractMatrix)::AbstractMatrix #
+#######################################
 
 const MATRIX_TO_MATRIX_FUNCS = [inv,
                                 diag_lmul, dense_lmul, utriag_lmul, ltriag_lmul,

@@ -1,6 +1,6 @@
 module DiffTests
 
-using LinearAlgebra: det, norm, dot, tr, Diagonal, LowerTriangular, UpperTriangular
+using LinearAlgebra: det, norm, dot, tr, lu, Diagonal, LowerTriangular, UpperTriangular
 using SparseArrays: sparse
 using Statistics: mean
 
@@ -161,7 +161,12 @@ const BINARY_BROADCAST_OPS = ((a, b) -> broadcast(+, a, b),
 # f(::AbstractMatrix, ::AbstractMatrix)::AbstractMatrix #
 #########################################################
 
-const BINARY_MATRIX_TO_MATRIX_FUNCS = [+, -, *, /, \,
+# Julia LinearAlgebra does not support matrix\matrix,
+# one needs to compute A factorization first
+ldiv_lu(A::AbstractMatrix, B::AbstractArray) = lu(A) \ B
+rdiv_lu(A::AbstractArray, B::AbstractMatrix) = A / lu(B)
+
+const BINARY_MATRIX_TO_MATRIX_FUNCS = [+, -, *, rdiv_lu, ldiv_lu,
                                        BINARY_BROADCAST_OPS...,
                                        (a, b) -> a * transpose(b), (a, b) -> transpose(a) * b, (a, b) -> transpose(a) * transpose(b),
                                        (a, b) -> a * adjoint(b), (a, b) -> adjoint(a) * b, (a, b) -> adjoint(a) * adjoint(b)]

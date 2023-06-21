@@ -114,7 +114,7 @@ end
 
 self_weighted_logit(x) = inv(1.0 + exp(-dot(x, x)))
 
-nested_array_mul(x) = sum(sum(x[1] * [[x[2], x[3]]]))
+nested_array_mul(x)::eltype(x) = sum(sum(x[1] * [[x[2], x[3]]]))
 
 const VECTOR_TO_NUMBER_FUNCS = [vec2num_1, vec2num_2,  vec2num_3, vec2num_4, vec2num_5,
                                 vec2num_6, vec2num_7, rosenbrock_1, rosenbrock_2,
@@ -260,25 +260,25 @@ diag_matrix(x::AbstractVecOrMat) = diag_matrix(Float64, size(x, 1))
 
 lehmer_matrix(::Type{T}, n::Integer) where T<:Real =
     [convert(T, min(i, j)/max(i, j)) for i in 1:n, j in 1:n]
-lehmer_matrix(x::AbstractVecOrMat) = lehmer_matrix(Float64, size(x, 1))
+lehmer_matrix(x::AbstractVecOrMat)::Matrix{Float64} = lehmer_matrix(Float64, size(x, 1))
 
 test_matrix = lehmer_matrix
 
 # left multiplication by a constant matrix
 diag_lmul(x::AbstractVecOrMat) = diag_matrix(x) * x
-dense_lmul(x::AbstractVecOrMat) = test_matrix(x) * x
-utriag_lmul(x::AbstractVecOrMat) =  UpperTriangular(test_matrix(x)) * x
-ltriag_lmul(x::AbstractVecOrMat) =  LowerTriangular(test_matrix(x)) * x
+dense_lmul(x::AbstractVecOrMat)::typeof(x) = test_matrix(x) * x
+utriag_lmul(x::AbstractVecOrMat)::typeof(x) = UpperTriangular(test_matrix(x)) * x
+ltriag_lmul(x::AbstractVecOrMat)::typeof(x) = LowerTriangular(test_matrix(x)) * x
 
-sparse_lmul(x::AbstractVecOrMat) = sparse(test_matrix(x)) * x
-sp_utriag_lmul(x::AbstractVecOrMat) = UpperTriangular(sparse(test_matrix(x))) * x
-sp_ltriag_lmul(x::AbstractVecOrMat) = LowerTriangular(sparse(test_matrix(x))) * x
+sparse_lmul(x::AbstractVecOrMat)::typeof(x) = sparse(test_matrix(x)) * x
+sp_utriag_lmul(x::AbstractVecOrMat)::typeof(x) = UpperTriangular(sparse(test_matrix(x))) * x
+sp_ltriag_lmul(x::AbstractVecOrMat)::typeof(x) = LowerTriangular(sparse(test_matrix(x))) * x
 
 # left division by a constant matrix
 diag_ldiv(x::AbstractVecOrMat) = diag_matrix(x) \ x
 dense_ldiv(x::AbstractVecOrMat) = test_matrix(x) \ x
-utriag_ldiv(x::AbstractVecOrMat) =  UpperTriangular(test_matrix(x)) \ x
-ltriag_ldiv(x::AbstractVecOrMat) =  LowerTriangular(test_matrix(x)) \ x
+utriag_ldiv(x::AbstractVecOrMat)::typeof(x) = UpperTriangular(test_matrix(x)) \ x
+ltriag_ldiv(x::AbstractVecOrMat)::typeof(x) = LowerTriangular(test_matrix(x)) \ x
 
 const VECTOR_TO_VECTOR_FUNCS = [diag_lmul, dense_lmul, utriag_lmul, ltriag_lmul,
                                 sparse_lmul, sp_utriag_lmul, sp_ltriag_lmul,

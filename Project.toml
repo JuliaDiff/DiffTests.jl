@@ -9,8 +9,16 @@ LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
+[weakdeps]
+MKLSparse = "0c723cd3-b8cd-5d40-b370-ba682dde9aae"
+
+[extensions]
+# some operations (ldiv!) are only supported by MKLSparse
+DiffTestsMKLSparseExt = ["MKLSparse"]
+
 [compat]
 julia = "1"
+MKLSparse = "1.2"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

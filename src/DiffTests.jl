@@ -279,14 +279,10 @@ diag_ldiv(x::AbstractVecOrMat) = diag_matrix(x) \ x
 dense_ldiv(x::AbstractVecOrMat) = test_matrix(x) \ x
 utriag_ldiv(x::AbstractVecOrMat) =  UpperTriangular(test_matrix(x)) \ x
 ltriag_ldiv(x::AbstractVecOrMat) =  LowerTriangular(test_matrix(x)) \ x
-sparse_ldiv(x::AbstractVecOrMat) = sparse(test_matrix(x)) \ x
-sp_utriag_ldiv(x::AbstractVecOrMat) = UpperTriangular(sparse(test_matrix(x))) \ x
-sp_ltriag_ldiv(x::AbstractVecOrMat) = LowerTriangular(sparse(test_matrix(x))) \ x
 
 const VECTOR_TO_VECTOR_FUNCS = [diag_lmul, dense_lmul, utriag_lmul, ltriag_lmul,
                                 sparse_lmul, sp_utriag_lmul, sp_ltriag_lmul,
-                                diag_ldiv, utriag_ldiv, ltriag_ldiv,
-                                sparse_ldiv, sp_utriag_ldiv, sp_ltriag_ldiv,]
+                                diag_ldiv, utriag_ldiv, ltriag_ldiv,]
 
 ######################################
 # f(x::AbstractArray)::AbstractArray #
@@ -316,7 +312,6 @@ const ARRAY_TO_ARRAY_FUNCS = [-, chebyquad, brown_almost_linear, trigonometric, 
 const MATRIX_TO_MATRIX_FUNCS = [inv,
                                 diag_lmul, dense_lmul, utriag_lmul, ltriag_lmul,
                                 sparse_lmul, sp_utriag_lmul, sp_ltriag_lmul,
-                                diag_ldiv, utriag_ldiv, ltriag_ldiv,
-                                sparse_ldiv, sp_utriag_ldiv, sp_ltriag_ldiv,]
+                                diag_ldiv, utriag_ldiv, ltriag_ldiv,]
 
 end # module

@@ -28,8 +28,8 @@ num2num_3(x) = 10.31^(x + x) - x
 num2num_4(x) = 1
 num2num_5(x) = 1. / (1. + exp(-x))
 
-const NUMBER_TO_NUMBER_FUNCS = (num2num_1, num2num_2, num2num_3,
-                                num2num_4, num2num_5, identity)
+const NUMBER_TO_NUMBER_FUNCS = [num2num_1, num2num_2, num2num_3,
+                                num2num_4, num2num_5, identity]
 
 #######################
 # f(x::Number)::Array #
@@ -46,7 +46,7 @@ function num2arr_1(x)
                     num2num_3(x)], 2, 2, 2)
 end
 
-const NUMBER_TO_ARRAY_FUNCS = (num2arr_1,)
+const NUMBER_TO_ARRAY_FUNCS = [num2arr_1,]
 
 ####################################
 # f!(y::Array, x::Number)::Nothing #
@@ -60,7 +60,7 @@ function num2arr_1!(y, x)
     return nothing
 end
 
-const INPLACE_NUMBER_TO_ARRAY_FUNCS = (num2arr_1!,)
+const INPLACE_NUMBER_TO_ARRAY_FUNCS = [num2arr_1!,]
 
 ########################
 # f(x::Vector)::Number #
@@ -116,10 +116,10 @@ self_weighted_logit(x) = inv(1.0 + exp(-dot(x, x)))
 
 nested_array_mul(x) = sum(sum(x[1] * [[x[2], x[3]]]))
 
-const VECTOR_TO_NUMBER_FUNCS = (vec2num_1, vec2num_2,  vec2num_3, vec2num_4, vec2num_5,
+const VECTOR_TO_NUMBER_FUNCS = [vec2num_1, vec2num_2,  vec2num_3, vec2num_4, vec2num_5,
                                 vec2num_6, vec2num_7, rosenbrock_1, rosenbrock_2,
                                 rosenbrock_3, rosenbrock_4, ackley, self_weighted_logit,
-                                nested_array_mul, first)
+                                nested_array_mul, first]
 
 ########################
 # f(x::Matrix)::Number #
@@ -144,7 +144,7 @@ mat2num_4(x) = mean(sum(sin.(x) * x, dims=2))
 
 softmax(x) = sum(exp.(x) ./ sum(exp.(x), dims=2))
 
-const MATRIX_TO_NUMBER_FUNCS = (det, mat2num_1, mat2num_2, mat2num_3, mat2num_4, softmax)
+const MATRIX_TO_NUMBER_FUNCS = [det, mat2num_1, mat2num_2, mat2num_3, mat2num_4, softmax]
 
 ####################
 # binary broadcast #
@@ -161,10 +161,10 @@ const BINARY_BROADCAST_OPS = ((a, b) -> broadcast(+, a, b),
 # f(::Matrix, ::Matrix)::Number #
 #################################
 
-const BINARY_MATRIX_TO_MATRIX_FUNCS = (+, -, *, /, \,
+const BINARY_MATRIX_TO_MATRIX_FUNCS = [+, -, *, /, \,
                                        BINARY_BROADCAST_OPS...,
                                        (a, b) -> a * transpose(b), (a, b) -> transpose(a) * b, (a, b) -> transpose(a) * transpose(b),
-                                       (a, b) -> a * adjoint(b), (a, b) -> adjoint(a) * b, (a, b) -> adjoint(a) * adjoint(b))
+                                       (a, b) -> a * adjoint(b), (a, b) -> adjoint(a) * b, (a, b) -> adjoint(a) * adjoint(b)]
 
 ###########################################
 # f(::Matrix, ::Matrix, ::Matrix)::Number #
@@ -174,7 +174,7 @@ relu(x) = log.(1.0 .+ exp.(x))
 sigmoid(n) = 1. / (1. + exp.(-n))
 neural_step(x1, w1, w2) = sigmoid(dot(w2[1:size(w1, 2)], relu(w1 * x1[1:size(w1, 2)])))
 
-const TERNARY_MATRIX_TO_NUMBER_FUNCS = (neural_step,)
+const TERNARY_MATRIX_TO_NUMBER_FUNCS = [neural_step,]
 
 ###################################
 # f!(y::Array, x::Array)::Nothing #
@@ -247,8 +247,8 @@ function mutation_test_2!(y, x)
     return nothing
 end
 
-const INPLACE_ARRAY_TO_ARRAY_FUNCS = (chebyquad!, brown_almost_linear!, trigonometric!,
-                                      mutation_test_1!, mutation_test_2!)
+const INPLACE_ARRAY_TO_ARRAY_FUNCS = [chebyquad!, brown_almost_linear!, trigonometric!,
+                                      mutation_test_1!, mutation_test_2!]
 
 ############################
 # f(x::VecOrMat)::VecOrMat #
@@ -282,10 +282,10 @@ sparse_ldiv(x::VecOrMat) = sparse(test_matrix(x)) \ x
 sp_utriag_ldiv(x::VecOrMat) = UpperTriangular(sparse(test_matrix(x))) \ x
 sp_ltriag_ldiv(x::VecOrMat) = LowerTriangular(sparse(test_matrix(x))) \ x
 
-const VECTOR_TO_VECTOR_FUNCS = (diag_lmul, dense_lmul, utriag_lmul, ltriag_lmul,
+const VECTOR_TO_VECTOR_FUNCS = [diag_lmul, dense_lmul, utriag_lmul, ltriag_lmul,
                                 sparse_lmul, sp_utriag_lmul, sp_ltriag_lmul,
                                 diag_ldiv, utriag_ldiv, ltriag_ldiv,
-                                sparse_ldiv, sp_utriag_ldiv, sp_ltriag_ldiv,)
+                                sparse_ldiv, sp_utriag_ldiv, sp_ltriag_ldiv,]
 
 ######################
 # f(x::Array)::Array #
@@ -305,17 +305,17 @@ arr2arr_1(x) = (sum(x .* x); fill(zero(eltype(x)), size(x)))
 
 arr2arr_2(x) = x[1, :] .+ x[1, :] .+ first(x)
 
-const ARRAY_TO_ARRAY_FUNCS = (-, chebyquad, brown_almost_linear, trigonometric, arr2arr_1,
-                              arr2arr_2, mutation_test_1, mutation_test_2, identity)
+const ARRAY_TO_ARRAY_FUNCS = [-, chebyquad, brown_almost_linear, trigonometric, arr2arr_1,
+                              arr2arr_2, mutation_test_1, mutation_test_2, identity]
 
 #######################
 # f(::Matrix)::Matrix #
 #######################
 
-const MATRIX_TO_MATRIX_FUNCS = (inv,
+const MATRIX_TO_MATRIX_FUNCS = [inv,
                                 diag_lmul, dense_lmul, utriag_lmul, ltriag_lmul,
                                 sparse_lmul, sp_utriag_lmul, sp_ltriag_lmul,
                                 diag_ldiv, utriag_ldiv, ltriag_ldiv,
-                                sparse_ldiv, sp_utriag_ldiv, sp_ltriag_ldiv,)
+                                sparse_ldiv, sp_utriag_ldiv, sp_ltriag_ldiv,]
 
 end # module

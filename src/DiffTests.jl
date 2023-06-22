@@ -114,7 +114,7 @@ end
 
 self_weighted_logit(x) = inv(1.0 + exp(-dot(x, x)))
 
-nested_array_mul(x)::eltype(x) = sum(sum(x[1] * [[x[2], x[3]]]))
+nested_array_mul(x) = sum(sum(x[1] * [[x[2], x[3]]]))::Base.promote_op(+, eltype(x), eltype(x))
 
 const VECTOR_TO_NUMBER_FUNCS = [vec2num_1, vec2num_2,  vec2num_3, vec2num_4, vec2num_5,
                                 vec2num_6, vec2num_7, rosenbrock_1, rosenbrock_2,

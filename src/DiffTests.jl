@@ -1,5 +1,8 @@
 module DiffTests
 
+import LinearAlgebra
+import SparseArrays
+
 using LinearAlgebra: det, norm, dot, tr, lu, Diagonal, LowerTriangular, UpperTriangular
 using SparseArrays: sparse
 using Statistics: mean

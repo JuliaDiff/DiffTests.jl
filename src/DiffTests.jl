@@ -7,6 +7,30 @@ using LinearAlgebra: det, norm, dot, tr, lu, Diagonal, LowerTriangular, UpperTri
 using SparseArrays: sparse
 using Statistics: mean
 
+# registers given functions in the specified functions registry
+function register(registry::AbstractVector, funcs::AbstractVector)
+    for f in funcs
+        isnothing(findfirst(==(f), registry)) && push!(registry, f)
+    end
+    return registry
+end
+
+function register(registry_id::Symbol, funcs::AbstractVector)
+    registry = nothing
+    try
+        registry = getproperty(@__MODULE__, registry_id)
+    catch e
+        if e isa UndefVarError
+            registry = Vector{Function}()
+            setproperty!(@__MODULE__, registry_id, registry)
+        else
+            rethrow(e)
+        end
+    end
+    register(registry, funcs)
+    return registry
+end
+
 #=
 These functions are organized in sets based on input/output type. They are unary and not
 in-place unless otherwised specified. These functions have been written with the following
@@ -31,9 +55,6 @@ num2num_3(x) = 10.31^(x + x) - x
 num2num_4(x) = 1
 num2num_5(x) = 1. / (1. + exp(-x))
 
-const NUMBER_TO_NUMBER_FUNCS = [num2num_1, num2num_2, num2num_3,
-                                num2num_4, num2num_5, identity]
-
 ###############################
 # f(x::Number)::AbstractArray #
 ###############################
@@ -49,8 +70,6 @@ function num2arr_1(x)
                     num2num_3(x)], 2, 2, 2)
 end
 
-const NUMBER_TO_ARRAY_FUNCS = [num2arr_1,]
-
 ############################################
 # f!(y::AbstractArray, x::Number)::Nothing #
 ############################################
@@ -62,8 +81,6 @@ function num2arr_1!(y, x)
     end
     return nothing
 end
-
-const INPLACE_NUMBER_TO_ARRAY_FUNCS = [num2arr_1!,]
 
 ################################
 # f(x::AbstractVector)::Number #
@@ -119,11 +136,6 @@ self_weighted_logit(x) = inv(1.0 + exp(-dot(x, x)))
 
 nested_array_mul(x) = sum(sum(x[1] * [[x[2], x[3]]]))::Base.promote_op(LinearAlgebra.matprod, eltype(x), eltype(x))
 
-const VECTOR_TO_NUMBER_FUNCS = [vec2num_1, vec2num_2,  vec2num_3, vec2num_4, vec2num_5,
-                                vec2num_6, vec2num_7, rosenbrock_1, rosenbrock_2,
-                                rosenbrock_3, rosenbrock_4, ackley, self_weighted_logit,
-                                nested_array_mul, first]
-
 ################################
 # f(x::AbstractMatrix)::Number #
 ################################
@@ -147,8 +159,6 @@ mat2num_4(x) = mean(sum(sin.(x) * x, dims=2))
 
 softmax(x) = sum(exp.(x) ./ sum(exp.(x), dims=2))
 
-const MATRIX_TO_NUMBER_FUNCS = [det, mat2num_1, mat2num_2, mat2num_3, mat2num_4, softmax]
-
 ####################
 # binary broadcast #
 ####################
@@ -169,11 +179,6 @@ const BINARY_BROADCAST_OPS = ((a, b) -> broadcast(+, a, b),
 ldiv_lu(A::AbstractMatrix, B::AbstractArray) = lu(A) \ B
 rdiv_lu(A::AbstractArray, B::AbstractMatrix) = A / lu(B)
 
-const BINARY_MATRIX_TO_MATRIX_FUNCS = [+, -, *, rdiv_lu, ldiv_lu,
-                                       BINARY_BROADCAST_OPS...,
-                                       (a, b) -> a * transpose(b), (a, b) -> transpose(a) * b, (a, b) -> transpose(a) * transpose(b),
-                                       (a, b) -> a * adjoint(b), (a, b) -> adjoint(a) * b, (a, b) -> adjoint(a) * adjoint(b)]
-
 ###################################################################
 # f(::AbstractMatrix, ::AbstractMatrix, ::AbstractMatrix)::Number #
 ###################################################################
@@ -181,8 +186,6 @@ const BINARY_MATRIX_TO_MATRIX_FUNCS = [+, -, *, rdiv_lu, ldiv_lu,
 relu(x) = log.(1.0 .+ exp.(x))
 sigmoid(n) = 1. / (1. + exp.(-n))
 neural_step(x1, w1, w2) = sigmoid(dot(w2[1:size(w1, 2)], relu(w1 * x1[1:size(w1, 2)])))
-
-const TERNARY_MATRIX_TO_NUMBER_FUNCS = [neural_step,]
 
 ###################################################
 # f!(y::AbstractArray, x::AbstractArray)::Nothing #
@@ -255,9 +258,6 @@ function mutation_test_2!(y, x)
     return nothing
 end
 
-const INPLACE_ARRAY_TO_ARRAY_FUNCS = [chebyquad!, brown_almost_linear!, trigonometric!,
-                                      mutation_test_1!, mutation_test_2!]
-
 ############################################
 # f(x::AbstractVecOrMat)::AbstractVecOrMat #
 ############################################
@@ -288,10 +288,6 @@ dense_ldiv(x::AbstractVecOrMat) = test_matrix(x) \ x
 utriag_ldiv(x::AbstractVecOrMat) = UpperTriangular(test_matrix(x)) \ x
 ltriag_ldiv(x::AbstractVecOrMat) = LowerTriangular(test_matrix(x)) \ x
 
-const VECTOR_TO_VECTOR_FUNCS = [diag_lmul, dense_lmul, utriag_lmul, ltriag_lmul,
-                                sparse_lmul, sp_utriag_lmul, sp_ltriag_lmul,
-                                diag_ldiv,]
-
 ######################################
 # f(x::AbstractArray)::AbstractArray #
 ######################################
@@ -310,22 +306,60 @@ arr2arr_1(x) = (sum(x .* x); fill(zero(eltype(x)), size(x)))
 
 arr2arr_2(x) = x[1, :] .+ x[1, :] .+ first(x)
 
-const ARRAY_TO_ARRAY_FUNCS = [-, chebyquad, brown_almost_linear, trigonometric, arr2arr_1,
-                              arr2arr_2, mutation_test_1, mutation_test_2, identity]
-
 #######################################
 # f(::AbstractMatrix)::AbstractMatrix #
 #######################################
 
-const MATRIX_TO_MATRIX_FUNCS = [inv,
-                                diag_lmul, dense_lmul, utriag_lmul, ltriag_lmul,
-                                sparse_lmul, sp_utriag_lmul, sp_ltriag_lmul,
-                                diag_ldiv,]
+function __init__()
+    register(:NUMBER_TO_NUMBER_FUNCS,
+             [num2num_1, num2num_2, num2num_3,
+              num2num_4, num2num_5, identity])
 
-if VERSION >= v"1.1"
-    # required ldiv!(triag, adjoint) that is not implemented in 1.0
-    append!(VECTOR_TO_VECTOR_FUNCS, [utriag_ldiv, ltriag_ldiv])
-    append!(MATRIX_TO_MATRIX_FUNCS, [utriag_ldiv, ltriag_ldiv])
+    register(:NUMBER_TO_ARRAY_FUNCS, [num2arr_1,])
+
+    register(:INPLACE_NUMBER_TO_ARRAY_FUNCS, [num2arr_1!,])
+
+    register(:VECTOR_TO_NUMBER_FUNCS,
+        [vec2num_1, vec2num_2,  vec2num_3, vec2num_4, vec2num_5,
+         vec2num_6, vec2num_7, rosenbrock_1, rosenbrock_2,
+         rosenbrock_3, rosenbrock_4, ackley, self_weighted_logit,
+         nested_array_mul, first])
+
+    register(:MATRIX_TO_NUMBER_FUNCS,
+        [det, mat2num_1, mat2num_2, mat2num_3, mat2num_4, softmax])
+
+    register(:TERNARY_MATRIX_TO_NUMBER_FUNCS, [neural_step,])
+
+    register(:VECTOR_TO_VECTOR_FUNCS,
+        [diag_lmul, dense_lmul, utriag_lmul, ltriag_lmul,
+         sparse_lmul, sp_utriag_lmul, sp_ltriag_lmul,
+         diag_ldiv,])
+
+    register(:MATRIX_TO_MATRIX_FUNCS,
+        [inv,
+         diag_lmul, dense_lmul, utriag_lmul, ltriag_lmul,
+         sparse_lmul, sp_utriag_lmul, sp_ltriag_lmul,
+         diag_ldiv,])
+
+    register(:ARRAY_TO_ARRAY_FUNCS,
+        [-, chebyquad, brown_almost_linear, trigonometric, arr2arr_1,
+         arr2arr_2, mutation_test_1, mutation_test_2, identity])
+
+    register(:INPLACE_ARRAY_TO_ARRAY_FUNCS,
+        [chebyquad!, brown_almost_linear!, trigonometric!,
+         mutation_test_1!, mutation_test_2!])
+
+    register(:BINARY_MATRIX_TO_MATRIX_FUNCS,
+        [+, -, *, rdiv_lu, ldiv_lu,
+         BINARY_BROADCAST_OPS...,
+         (a, b) -> a * transpose(b), (a, b) -> transpose(a) * b, (a, b) -> transpose(a) * transpose(b),
+         (a, b) -> a * adjoint(b), (a, b) -> adjoint(a) * b, (a, b) -> adjoint(a) * adjoint(b)])
+
+    if VERSION >= v"1.1"
+        # required ldiv!(triag, adjoint) that is not implemented in 1.0
+        register(:VECTOR_TO_VECTOR_FUNCS, [utriag_ldiv, ltriag_ldiv])
+        register(:MATRIX_TO_MATRIX_FUNCS, [utriag_ldiv, ltriag_ldiv])
+    end
 end
 
 end # module
